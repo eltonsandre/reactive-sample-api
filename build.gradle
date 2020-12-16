@@ -33,7 +33,7 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    ['compileOnly', 'annotationProcessor'].each {
+    ['compileOnly', 'annotationProcessor', 'testCompileOnly', 'testAnnotationProcessor'].each {
         conf -> add(conf, 'org.projectlombok:lombok:1.18.18')
     }
 
