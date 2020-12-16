@@ -1,0 +1,83 @@
+spring:
+  application.name: reactive-api
+  #profiles:
+  #  include: ssl-enabled
+
+  output.ansi.enabled: ALWAYS
+
+  data:
+    mongodb:
+      authentication-database: admin
+      database: store_db
+      host: localhost
+      port: 27017
+      username: root
+      password: root
+
+  redis:
+    host: localhost
+    port: 7000
+    password: 1234
+    ssl: false
+    cluster:
+      nodes:
+        - localhost:7000
+        - localhost:7001
+        - localhost:7002
+
+  sleuth.sampler.probability: 1.0
+
+logging.level:
+  javax.net: debug
+
+management:
+  endpoints.web.exposure.include: '*'
+  endpoint.health.probes.enabled: true
+
+server:
+  http2.enabled: true
+  error.include-stacktrace: on-trace-param
+  servlet:
+    encoding.charset: UTF-8
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+caches:
+  company:
+    time-to-live: PT10S
+  product:
+    time-to-live: PT30S
+
+clients:
+  companies:
+    name: api-company
+    base-url: http://api-service-mocktest.mocklab.io
+    read-timeout: 2000
+    conection-timeout: 2000
+    max-attempts: 3
+    fixedDelay: PT2S
+    path-companies: companies
+
+  products:
+    name: api-company
+    base-url: http://api-service-mocktest.mocklab.io
+    read-timeout: 3000
+    conection-timeout: 5000
+    path-companies: /companies
+
+
+
+--- #SSL localhost
+spring.profiles: ssl-enabled
+server:
+  port: 8443
+  port.http: 8080
+  ssl:
+    enabled: true
+    key-alias: ${spring.application.name}
+    key-password: changeit
+    key-store-type: PKCS12
+    key-store-password: changeit
+    key-store: cacerts/TLS/${spring.application.name}.jks
