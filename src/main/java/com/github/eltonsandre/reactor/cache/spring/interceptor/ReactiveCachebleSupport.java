@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.time.Duration;
 
-class ReactiveCachebleSupport extends CacheAspectSupport {
+class ReactiveCachebleSupport {
 
     public static final String DELIMITER = "::";
     protected final ReactiveRedisTemplate<String, Object> redis;

@@ -5,6 +5,8 @@ spring:
 
   output.ansi.enabled: ALWAYS
 
+  codec.max-in-memory-size: 1MB
+
   data:
     mongodb:
       authentication-database: admin

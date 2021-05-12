@@ -4,12 +4,16 @@ package com.github.eltonsandre.sample.reactive.client.base;
 import com.github.eltonsandre.sample.reactive.client.company.properties.CompanyClientProperties;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -45,6 +49,7 @@ public class WebClientConfiguration {
                 .clientConnector(this.reactoHttpClientWithConnectAndReadTimeOut(clientProperties))
                 .baseUrl(clientProperties.getBaseUrl())
                 .defaultHeader(ORIGIN, this.applicationName)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .filter(this.logRequestFilter(clientProperties.getName()))
                 .build();
     }
@@ -52,8 +57,10 @@ public class WebClientConfiguration {
     private ReactorClientHttpConnector reactoHttpClientWithConnectAndReadTimeOut(final AbstractClientProperties clientProperties) {
         final var httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, clientProperties.getConnectionTimeout())
-                .doOnConnected(connection ->
-                        connection.addHandlerLast(new ReadTimeoutHandler(clientProperties.getReadTimeout(), TimeUnit.MILLISECONDS)));
+                .doOnConnected(connection -> connection
+                        .addHandlerLast(new ReadTimeoutHandler(clientProperties.getReadTimeout(), TimeUnit.MILLISECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(clientProperties.getWriteTimeout(), TimeUnit.MILLISECONDS))
+                );
 
         if (this.sslEnabled) {
             log.info("enabled HTTP/2.0 support with TLS");
