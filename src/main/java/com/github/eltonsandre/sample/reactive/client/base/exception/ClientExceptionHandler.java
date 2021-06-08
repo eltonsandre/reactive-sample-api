@@ -31,13 +31,13 @@ public final class ClientExceptionHandler {
     }
 
     private static Throwable error4xx(final HttpStatus clientError) {
-        Throwable throwable = switch (clientError) {
-            case NOT_FOUND -> new NotFoundException();
-            default -> new BadRequestException();
-        };
-
-        log.error(throwable.getMessage(), throwable);
-        return throwable;
+//        Throwable throwable = switch (clientError) {
+//            case NOT_FOUND -> new NotFoundException();
+//            default -> new BadRequestException();
+//        };
+//        log.error(throwable.getMessage(), throwable);
+//        return throwable;
+        return new Throwable();
     }
 
     private static Throwable error5xx(final HttpStatus serverError) {

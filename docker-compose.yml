@@ -25,3 +25,9 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: root
     ports:
       - 28081:8081
+
+  sonarqube:
+    image: sonarqube:7.6-community
+    restart: unless-stopped
+    ports:
+      - 9000:9000

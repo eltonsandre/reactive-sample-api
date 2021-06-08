@@ -1,15 +1,17 @@
 plugins {
-    id 'org.springframework.boot' version '2.4.3'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'idea'
+    id 'org.springframework.boot' version '2.4.3'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
+
+apply from: './sonar.gradle'
 
 group = 'com.github.eltonsandre'
 version = '0.0.1-SNAPSHOT'
 
-sourceCompatibility = JavaVersion.VERSION_15
-targetCompatibility = JavaVersion.VERSION_15
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 configurations {
     compileOnly {
@@ -62,6 +64,11 @@ dependencies {
             'io.projectreactor:reactor-test',
             'org.testcontainers:junit-jupiter',
             'org.testcontainers:mongodb'
+
+//    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'com.github.spotbugs:spotbugs:4.2.3'
+
+
 }
 
 dependencyManagement {
@@ -73,4 +80,14 @@ dependencyManagement {
 
 test {
     useJUnitPlatform()
+}
+
+clean.doFirst {
+    delete 'build', 'out'
+}
+
+sonarqube {
+    properties {
+        property "sonar.findbugs.excludesFilters", "findbugs-exclude.xml"
+    }
 }

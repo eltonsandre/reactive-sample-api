@@ -1,0 +1,104 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    ext {
+        jacocoVersion = '0.8.7'
+        pitestVersion = '1.5.1'
+        sonarqubeVersion = '3.2.0'
+        spotbugsPluginVersion = '4.7.1'
+        spotbugsVersion = '4.2.3'
+    }
+    dependencies {
+        classpath("info.solidsoft.gradle.pitest:gradle-pitest-plugin:${pitestVersion}")
+        classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarqubeVersion}")
+        classpath("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:${spotbugsPluginVersion}")
+    }
+}
+
+apply plugin: 'jacoco'
+apply plugin: org.sonarqube.gradle.SonarQubePlugin
+apply plugin: com.github.spotbugs.snom.SpotBugsPlugin
+apply plugin: info.solidsoft.gradle.pitest.PitestPlugin
+
+ext {
+    exclusions = [
+            '**/*Application.*',
+            '**/domain/model/**',
+            '**/entities/**',
+            '**/enums/**',
+            '**/dto/**',
+            '**/mapper/**',
+            '**/exception/**',
+            '**/configs/**',
+            '**/reactor/cache/**',
+    ]
+    exclusionsJoin = project.ext.exclusions.join(',')
+}
+
+spotbugs {
+    toolVersion = project.ext.spotbugsVersion
+}
+
+sonarqube {
+    properties {
+        property 'sonar.projectKey', project.name
+        property 'sonar.projectName', project.name
+        property 'sonar.sourceEncoding', 'UTF-8'
+        property 'sonar.host.url', 'http://localhost:9000/'
+        property 'sonar.login', 'a02872add321bcb9d43d5b0396238be757bda2b8'
+
+        property 'sonar.sources', 'src/main/java'
+        property 'sonar.tests', 'src/test/java'
+
+        property 'sonar.java.binaries', "$buildDir/classes"
+        property 'sonar.java.coveragePlugin', 'jacoco'
+
+        property 'sonar.exclusions', project.ext.exclusionsJoin
+        property 'sonar.test.exclusions', project.ext.exclusionsJoin
+        property 'sonar.coverage.exclusions', project.ext.exclusionsJoin
+
+        property 'sonar.pitest.mode', 'reuseReport'
+        property 'sonar.pitest.reportsDirectory', "$buildDir/reports/pitest/mutations.xml"
+    }
+}
+
+jacoco {
+    toolVersion = project.ext.jacocoVersion
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.setEnabled(true)
+        xml.setEnabled(true)
+    }
+
+    afterEvaluate {
+        getClassDirectories().setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: project.ext.exclusions)
+        }))
+    }
+}
+
+pitest {
+    pitestVersion = project.ext.pitestVersion
+    threads = 4
+    timestampedReports = false
+    outputFormats = ['XML', 'HTML']
+    junit5PluginVersion = '0.12'
+}
+
+tasks.named('sonarqube').configure {
+    dependsOn jacocoTestReport, jacocoTestCoverageVerification
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
